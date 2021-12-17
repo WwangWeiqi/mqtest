@@ -32,12 +32,9 @@ router.post('/receiveQueueMsg', async function (req, res) {
     const body = req.body;
     //setInterval(() => {
 
-    mq.receiveQueueMsg(body.queueName, (msg) => {
-      console.log('处理中--====>>>', JSON.parse(msg));
-    });
-    //}, 500);
-
-    res.send(resSuccess('获取队列成功', {}));
+    let arr = await mq.receiveQueueMsg([],body.queueName,body.user_id)
+ 
+    res.send(resSuccess('消费队列成功',  arr));
   } catch (err) {
     res.send(failRes(err.code, err.message));
   }
@@ -69,8 +66,8 @@ router.post('/sendQueueMsgQos', async function (req, res) {
 router.post('/receiveQueueMsgQos', async function (req, res) {
   try {
     const body = req.body;
-    await mqQos.receiveQueueMsgQos(body);
-    res.send(resSuccess('获取队列成功', {}));
+     await mqQos.receiveQueueMsgQos(body)
+    res.send(resSuccess('消费队列成功', {}));
   } catch (err) {
     res.send(failRes(err.code, err.message));
   }

@@ -64,9 +64,11 @@ class RabbitMQ {
    * 接收消息到队列 - Consume 消费者
    * @param queueName
    */
-  receiveQueueMsg = (queueName: any, receiveCallBack: any) => {
+  receiveQueueMsg = (arr:any,queueName: any,id:any) => {
     let self = this;
-    this.connection
+    return new Promise((resolve,reject)=>{
+      
+      this.connection
       .then(function (conn) {
         //连接成功后创建通道
         return conn.createChannel();
@@ -84,10 +86,12 @@ class RabbitMQ {
                 (msg) => {
                   if (msg !== null) {
                     let data = msg.content.toString();
-
-                    receiveCallBack && receiveCallBack(data);
-
-                    channel.ack(msg);
+                    let pdata = JSON.parse(data)
+                    arr.push(pdata)
+                    if(pdata.user_id == id){
+                      console.log("ack msg",pdata)
+                      channel.ack(msg);
+                    }
                   }
                 },
                 { noAck: false }
@@ -96,6 +100,7 @@ class RabbitMQ {
             .finally(function () {
               setTimeout(() => {
                 if (channel) {
+                  resolve(arr)
                   channel.close(); // 关闭链接
                 }
               }, 500);
@@ -103,8 +108,9 @@ class RabbitMQ {
         );
       })
       .catch(function (err) {
-        receiveCallBack && receiveCallBack(err);
+        reject(err);
       });
+    })
   };
 }
 
