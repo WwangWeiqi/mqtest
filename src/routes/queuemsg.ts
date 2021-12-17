@@ -13,9 +13,9 @@ import mqQos from '@/utils/rabbitmq_util_qos';
 router.post('/sendQueueMsg', async function (req, res) {
   try {
     const body = req.body;
-    mq.sendQueueMsg(body.queueName, body.data)
+   await mq.sendQueueMsg(body.queueName, body.msg)
       .then((result) => res.send(resSuccess('创建队列成功', result)))
-      .catch((err) => res.send(failRes(err.code, err)));
+   
   } catch (err) {
     res.send(failRes(err.code, err.message));
   }
