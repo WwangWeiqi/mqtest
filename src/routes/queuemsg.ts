@@ -4,6 +4,7 @@ import { failRes, resSuccess } from '@/utils/utils';
 import mq from '@/utils/rabbitmq_util';
 import mqQos from '@/utils/rabbitmq_util_qos';
 
+//
 /**
  * @description 向MQ发送一个消息 - 创建队列
  * @param {String} queueName 列队名
