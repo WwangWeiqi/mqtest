@@ -1,7 +1,2 @@
-# 宝政银小程序
+#消息队列功能测试 
 
-#### 启动
-
-1. yarn start
-
-docker build -t bzy-minprogram-server .
