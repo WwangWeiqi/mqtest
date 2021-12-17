@@ -27,7 +27,7 @@ class RabbitMQ {
 
   //发布消息到队列中
   async sendQueueMsgQos(body) {
-    const queueName = body.exchangeName;
+    const queueName = body.queueName;
     const exchangeName = body.exchangeName;
     const routingKey = body.routingKey;
     const msg = body.msg;
@@ -48,19 +48,14 @@ class RabbitMQ {
   }
 
   async receiveQueueMsgQos(body) {
-    const exchangeName = body.exchangeName;
     const queueName = body.queueName;
-    const routingKey = body.routingKey;
 
     const channel = await this.open.then((conn) => {
       return conn.createChannel();
     });
-    // 3. 声明参数
 
     // 4. 声明交换机、对列进行绑定
-    await channel.assertExchange(exchangeName, 'topic', { durable: true });
-    // await channel.assertQueue(queueName);
-    await channel.bindQueue(queueName, exchangeName, routingKey);
+    await channel.assertExchange(queueName, 'topic', { durable: true });
 
     // 5. 限流参数设置
     await channel.prefetch(1, false);
