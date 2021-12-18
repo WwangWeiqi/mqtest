@@ -1,6 +1,6 @@
 export default {
   protocol: 'amqp',
-  hostname: 'localhost',
+  hostname: '81.69.247.43',
   port: 5672,
   username: 'admin',
   password: 'admin',
