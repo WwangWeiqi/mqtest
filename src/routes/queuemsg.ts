@@ -30,10 +30,7 @@ router.post('/sendQueueMsg', async function (req, res) {
 router.post('/receiveQueueMsg', async function (req, res) {
   try {
     const body = req.body;
-    //setInterval(() => {
-
     let arr = await mq.receiveQueueMsg([],body.queueName,body.user_id)
- 
     res.send(resSuccess('消费队列成功',  arr));
   } catch (err) {
     res.send(failRes(err.code, err.message));

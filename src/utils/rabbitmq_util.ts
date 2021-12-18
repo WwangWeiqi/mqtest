@@ -29,9 +29,9 @@ class RabbitMQ {
   /**
    * 发送消息到队列 - publish 生产者
    * @param queueName
-   * @param data
+   * @param msg
    */
-  sendQueueMsg(queueName, data) {
+  sendQueueMsg(queueName, msg) {
     return new Promise(async (resolve, reject) => {
       let self = this;
       this.connection
@@ -43,7 +43,7 @@ class RabbitMQ {
             .assertQueue(queueName, { durable: true }) //定义队列 durable: true 表示持久化
             .then(async (ok) => {
               //监听成功后向队列发送消息，这里我们就简单发送一个字符串。发送完毕后关闭通道。
-              const send = channel.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), { persistent: false }); //将队列保存
+              const send = channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)), { persistent: false }); //将队列保存
               await channel.close(); // 关闭链接
               resolve(send);
             })
