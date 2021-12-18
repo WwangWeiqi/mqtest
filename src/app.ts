@@ -7,6 +7,9 @@ import logger from 'morgan';
 import cors from 'cors';
 import setRoutes from '@/routes/registerRouter';
 import session from 'express-session';
+import mq from '@/utils/rabbitmq_util';
+
+mq.receiveQueueMsg([],"thequeue","")
 
 const app: express.Application = express();
 

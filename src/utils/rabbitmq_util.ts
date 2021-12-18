@@ -100,6 +100,7 @@ class RabbitMQ {
             .finally(function () {
               setTimeout(() => {
                 if (channel) {
+                  console.log(arr)
                   resolve(arr)
                   channel.close(); // 关闭链接
                 }
