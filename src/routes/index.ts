@@ -12,7 +12,8 @@ router.use('/auth', async function (req: express.Request, res: express.Response,
     const sessionid = req.headers['sessionid'] ? req.headers['sessionid'] : '';
     console.log('====>>> MQ Auth 它来了');
 
-    next();
+    // next();
+    res.send(resSuccess('Auth成功', {}));
   } catch (err) {
     res.send(failRes(err.code, err.message));
   }
