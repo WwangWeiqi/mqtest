@@ -6,7 +6,7 @@
 </head>
 
 <body>
-    <div id="main" style="width: 200px;height: 200px;background-color: antiquewhite;">
+    <div id="main" style="width: 100%;height: 200px;background-color: antiquewhite;">
         <div id="message"></div>
     </div>
 </body>
@@ -39,8 +39,7 @@
     */
 
 
-
-    var ws = new WebSocket('ws://81.69.247.43:15674/ws');
+    var ws = new WebSocket('ws://127.0.0.1:15674/ws');
     // 获得Stomp client对象
     var client = Stomp.over(ws);
 
@@ -51,20 +50,21 @@
     // 定义连接成功回调函数
     var on_connect = function (x) {
         //data.body是接收到的数据
-        client.subscribe("/queue/MQ:xx", function (data) {
+        client.subscribe("/exchange/mq/mq", function (data) {
+            // client.subscribe("/queue/MQ:xx", function (data) {
             var msg = data.body;
-            $("#message").append("收到数据：" + msg);
+            $("#message").append("接收数据:" + msg + '<br/>');
         });
     };
 
     // 定义错误时回调函数
-    var on_error = function () {
-        console.log('error');
+    var on_error = function (e) {
+        console.log('error', e);
     };
 
     // 连接RabbitMQ
     client.connect('admin', 'admin', on_connect, on_error, '/');
-    console.log(">>>连接上http://localhost:15674");
+    console.log(">>>连接上http://81.69.247.43:15674");
 
 </script>
 

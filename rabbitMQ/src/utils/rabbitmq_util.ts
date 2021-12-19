@@ -64,54 +64,132 @@ class RabbitMQ {
    * 接收消息到队列 - Consume 消费者
    * @param queueName
    */
-  receiveQueueMsg = (arr:any,queueName: any,id:any) => {
+  receiveQueueMsg = (arr: any, queueName: any, id: any) => {
     let self = this;
-    return new Promise((resolve,reject)=>{
-      
+    return new Promise((resolve, reject) => {
       this.connection
-      .then(function (conn) {
-        //连接成功后创建通道
-        return conn.createChannel();
-      })
-      .then(function (channel) {
-        return (
-          channel
-            //通道创建成功后我们通过通道对象的assertQueue方法来监听hello队列，并设置durable持久化为false。这里消息将会被保存在内存中。该方法会返回一个promise对象。
-            .assertQueue(queueName, { durable: true }) //定义队列 durable: true 表示持久化
-            .then((ok) => {
-              //监听创建成功后，我们使用ch.consume创建一个消费者。指定消费hello队列和处理函数，在这里我们简单打印一句话。设置noAck为true表示不对消费结果做出回应。
-              //ch.consume会返回一个promise，这里我们把这个promise赋给ok。
-              return channel.consume(
-                queueName,
-                (msg) => {
-                  if (msg !== null) {
-                    let data = msg.content.toString();
-                    let pdata = JSON.parse(data)
-                    arr.push(pdata)
-                    if(pdata.user_id == id){
-                      console.log("ack msg",pdata)
-                      channel.ack(msg);
+        .then(function (conn) {
+          //连接成功后创建通道
+          return conn.createChannel();
+        })
+        .then(function (channel) {
+          return (
+            channel
+              //通道创建成功后我们通过通道对象的assertQueue方法来监听hello队列，并设置durable持久化为false。这里消息将会被保存在内存中。该方法会返回一个promise对象。
+              .assertQueue(queueName, { durable: true }) //定义队列 durable: true 表示持久化
+              .then((ok) => {
+                //监听创建成功后，我们使用ch.consume创建一个消费者。指定消费hello队列和处理函数，在这里我们简单打印一句话。设置noAck为true表示不对消费结果做出回应。
+                //ch.consume会返回一个promise，这里我们把这个promise赋给ok。
+                return channel.consume(
+                  queueName,
+                  (msg) => {
+                    if (msg !== null) {
+                      let data = msg.content.toString();
+                      let pdata = JSON.parse(data);
+                      arr.push(pdata);
+                      if (pdata.user_id == id) {
+                        console.log('ack msg', pdata);
+                        channel.ack(msg);
+                      }
                     }
+                  },
+                  { noAck: false }
+                );
+              })
+              .finally(function () {
+                setTimeout(() => {
+                  if (channel) {
+                    console.log(arr);
+                    resolve(arr);
+                    channel.close(); // 关闭链接
                   }
-                },
-                { noAck: false }
-              );
-            })
-            .finally(function () {
-              setTimeout(() => {
-                if (channel) {
-                  console.log(arr)
-                  resolve(arr)
-                  channel.close(); // 关闭链接
-                }
-              }, 500);
-            })
-        );
-      })
-      .catch(function (err) {
-        reject(err);
-      });
-    })
+                }, 500);
+              })
+          );
+        })
+        .catch(function (err) {
+          reject(err);
+        });
+    });
+  };
+
+  /**
+   * 发送消息到队列 - publish 生产者
+   * topic 按照一定的规则匹配路由
+   * @param queueName
+   * @param msg
+   */
+  emitTopic = (queueName, msg) => {
+    return new Promise(async (resolve, reject) => {
+      this.connection
+        .then(function (conn) {
+          return conn.createChannel();
+        })
+        .then(async function (channel) {
+          // 创建or连上 交换机
+          // 直连方式；
+          await channel.assertExchange(queueName, 'topic', { durable: false });
+          // 消息发给交换机
+          const send = await channel.publish(queueName, 'quick.orange.rabbit', Buffer.from(JSON.stringify(msg)));
+          await channel.close(); // 关闭链接
+          resolve(send);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+  /**
+   * 接收消息到队列 - Consume 消费者
+   * @param queueName
+   */
+  receiveTopic = (arr: any, queueName: any) => {
+    return new Promise((resolve, reject) => {
+      this.connection
+        .then(function (conn) {
+          //连接成功后创建通道
+          return conn.createChannel();
+        })
+        .then(function (channel) {
+          return (
+            channel
+              //通道创建成功后我们通过通道对象的assertQueue方法来监听hello队列，并设置durable持久化为false。这里消息将会被保存在内存中。该方法会返回一个promise对象。
+              .assertQueue(queueName, { durable: true }) //定义队列 durable: true 表示持久化
+              .then(async (ok) => {
+                await channel.assertExchange(queueName, 'topic', { durable: false });
+                const queue = await channel.assertQueue(queueName);
+                await channel.bindQueue(queue.queue, queueName, '*.orange.*');
+                return channel.consume(
+                  queueName,
+                  (msg) => {
+                    if (msg !== null) {
+                      let data = msg.content.toString();
+                      let pdata = JSON.parse(data);
+                      arr.push(pdata);
+                      //   if (pdata.user_id) {
+                      //     console.log('ack msg', pdata);
+                      //     channel.ack(msg);
+                      //   }
+                    }
+                  },
+                  { noAck: false }
+                );
+              })
+              .finally(function () {
+                setTimeout(() => {
+                  if (channel) {
+                    console.log(arr);
+                    resolve(arr);
+                    channel.close(); // 关闭链接
+                  }
+                }, 500);
+              })
+          );
+        })
+        .catch(function (err) {
+          reject(err);
+        });
+    });
   };
 }
 
